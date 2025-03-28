@@ -64,9 +64,17 @@ def monitor_resource_usage():
         
         time.sleep(5)  # Update every 5 seconds
 
+# Add this to worker_wrapper.py near the start_dllama_worker function
+def ensure_port_accessible():
+    """Ensure the worker port is accessible for network connections"""
+    # You might need to modify the container's network settings
+    # or ensure the port is properly exposed in docker-compose.yml
+    logger.info(f"Ensuring port {dllama_worker_port} is accessible")
+
 def start_dllama_worker():
     """Start the distributed-llama worker process"""
     global dllama_worker_process
+    ensure_port_accessible()
     
     cmd = [
         "/app/distributed-llama/dllama", 

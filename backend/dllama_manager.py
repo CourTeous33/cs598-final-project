@@ -53,6 +53,27 @@ class DistributedLlamaManager:
             logger.info("Building dllama-api...")
             subprocess.run(["make", "dllama-api"], cwd="/app/distributed-llama", check=True)
     
+    # Add this function to help debug worker connectivity
+    async def check_worker_connectivity(self) -> Any:
+        """Check if worker dllama processes are properly accessible"""
+        worker_ips = ["worker1:9998", "worker2:9998", "worker3:9998", "worker4:9998"]
+        available_workers = []
+        
+        # Check each worker's connectivity via direct TCP connection
+        for worker in worker_ips:
+            host, port = worker.split(':')
+            try:
+                # Try to establish a TCP connection
+                reader, writer = await asyncio.open_connection(host, int(port))
+                writer.close()
+                await writer.wait_closed()
+                logger.info(f"✅ Worker {worker} is accessible via TCP")
+                available_workers.append(worker)
+            except Exception as e:
+                logger.error(f"❌ Worker {worker} is not accessible via TCP: {e}")
+        
+        return available_workers
+    
     async def start_inference_server(self) -> bool:
         """
         Start the distributed-llama inference server
@@ -65,7 +86,24 @@ class DistributedLlamaManager:
                 logger.info("Inference server is already running")
                 return True
             
+            # Check worker availability before starting server
+            logger.info("Checking worker availability before starting server...")
+            # In start_inference_server method:
+            available_workers = await self.check_worker_connectivity()
+
+            if len(available_workers) == 0:
+                logger.warning("No dllama workers accessible! Running in standalone mode.")
+            elif len(available_workers) not in [1, 2, 4, 8]:
+                # Adjust to nearest power of 2
+                if len(available_workers) > 4:
+                    available_workers = available_workers[:4]
+                elif len(available_workers) > 2:
+                    available_workers = available_workers[:2]
+                elif len(available_workers) > 1:
+                    available_workers = available_workers[:1]
+                logger.warning(f"Adjusted to {len(available_workers)} workers for power-of-2 requirement")
             
+            # Build command with available workers
             cmd = [
                 "/app/distributed-llama/dllama", 
                 "inference",
@@ -76,15 +114,16 @@ class DistributedLlamaManager:
                 "--nthreads", "4", 
                 "--port", "9999",
             ]
-
-            worker_ips = ["worker1:9998", "worker2:9998", "worker3:9998", "worker4:9998"]
-            cmd.append("--workers")
-            cmd.extend(worker_ips)  # Add each worker as a separate argument
             
-           
+            # Only add workers if there are any available
+            if available_workers:
+                cmd.append("--workers")
+                cmd.extend(available_workers)
             
             logger.info(f"Starting distributed-llama server with command: {' '.join(cmd)}")
-            # Rest of the method remains the same
+            logger.info(f"Current directory: {os.getcwd()}")
+            logger.info(f"Distributed-llama directory exists: {os.path.exists('/app/distributed-llama')}")
+            logger.info(f"Dllama binary exists: {os.path.exists('/app/distributed-llama/dllama')}")
             
             try:
                 self.process = subprocess.Popen(
@@ -100,8 +139,9 @@ class DistributedLlamaManager:
                 
                 if self.process.poll() is not None:
                     stderr = self.process.stderr.read()
-                    logger.error(f"Failed to start distributed-llama server: {stderr}")
-                    raise RuntimeError(f"Failed to start distributed-llama server: {stderr}")
+                    if stderr is None:
+                        logger.error(f"Failed to start distributed-llama server: {stderr}")
+                        raise RuntimeError(f"Failed to start distributed-llama server: {stderr}")
                 
                 # Set up a thread to log output
                 def log_output():
@@ -118,6 +158,7 @@ class DistributedLlamaManager:
             except Exception as e:
                 logger.exception("Error starting distributed-llama server")
                 raise
+    
     
     async def stop_inference_server(self) -> bool:
         """

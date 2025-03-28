@@ -38,7 +38,7 @@ services:
       resources:
         limits:
           cpus: '2.0'
-          memory: 4G
+          memory: 16G
     # Healthcheck to ensure backend is running properly
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/workers/status"]
