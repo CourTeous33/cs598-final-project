@@ -10,6 +10,7 @@ docker-compose.override.yml
 .env.production.local
 
 ./models/
+./*/models/
 ./backend/distributed-llama
 # Node.js (Frontend)
 node_modules/
