@@ -20,7 +20,8 @@ COPY . /app/
 
 # Copy requirements and install dependencies
 COPY requirements.txt /app/
-COPY ../models/. /models/
+RUN mkdir -p /models
+COPY ./models/. /models
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Clone and build distributed-llama
@@ -33,10 +34,9 @@ RUN make dllama
 RUN echo "Build complete"
 WORKDIR /app
 
-
 # Expose ports
 EXPOSE 5000
-EXPOSE 9998
+EXPOSE 9991
 
 # Start the Flask server
 CMD ["python3", "worker_wrapper.py"]

@@ -29,7 +29,7 @@ services:
       - ./backend:/app
       - ./models:/models
     environment:
-      - WORKER_URLS=http://worker1:5000,http://worker2:5000,http://worker3:5000,http://worker4:5000,http://worker5:5000
+      - WORKER_URLS=http://192.168.90.11:5000,http://192.168.90.12:5000,http://192.168.90.13:5000,http://192.168.90.14:5000,http://192.168.90.15:5000
       - DLLAMA_MODEL_PATH=/models/llama3_2_1b_instruct_q40/dllama_model_llama3_2_1b_instruct_q40.m
       - DLLAMA_TOKENIZER_PATH=/models/llama3_2_1b_instruct_q40/dllama_tokenizer_llama3_2_1b_instruct_q40.t
     networks:
@@ -54,15 +54,19 @@ services:
       dockerfile: Dockerfile
     container_name: worker1
     restart: unless-stopped
+    ports:
+      - "9991:9991"
+      - "19998:9998"
     volumes:
       - ./worker:/app
       - ./models:/models
     environment:
       - WORKER_ID=1
-      - DLLAMA_WORKER_PORT=9998
+      - DLLAMA_WORKER_PORT=9991
       - DLLAMA_API_PORT=5000
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.90.11
     deploy:
       resources:
         limits:
@@ -82,15 +86,19 @@ services:
       dockerfile: Dockerfile
     container_name: worker2
     restart: unless-stopped
+    ports:
+      - "9992:9992"
+      - "29998:9998"
     volumes:
       - ./worker:/app
       - ./models:/models
     environment:
       - WORKER_ID=2
-      - DLLAMA_WORKER_PORT=9998
+      - DLLAMA_WORKER_PORT=9992
       - DLLAMA_API_PORT=5000
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.90.12
     deploy:
       resources:
         limits:
@@ -109,15 +117,19 @@ services:
       dockerfile: Dockerfile
     container_name: worker3
     restart: unless-stopped
+    ports:
+      - "9993:9993"
+      - "39998:9998"
     volumes:
       - ./worker:/app
       - ./models:/models
     environment:
       - WORKER_ID=3
-      - DLLAMA_WORKER_PORT=9998
+      - DLLAMA_WORKER_PORT=9993
       - DLLAMA_API_PORT=5000
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.90.13
     deploy:
       resources:
         limits:
@@ -136,15 +148,19 @@ services:
       dockerfile: Dockerfile
     container_name: worker4
     restart: unless-stopped
+    ports:
+      - "9994:9994"
+      - "49998:9998"
     volumes:
       - ./worker:/app
       - ./models:/models
     environment:
       - WORKER_ID=4
-      - DLLAMA_WORKER_PORT=9998
+      - DLLAMA_WORKER_PORT=9994
       - DLLAMA_API_PORT=5000
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.90.14
     deploy:
       resources:
         limits:
@@ -163,15 +179,19 @@ services:
       dockerfile: Dockerfile
     container_name: worker5
     restart: unless-stopped
+    ports:
+      - "9995:9995"
+      - "59998:9998"
     volumes:
       - ./worker:/app
       - ./models:/models
     environment:
       - WORKER_ID=5
-      - DLLAMA_WORKER_PORT=9998
+      - DLLAMA_WORKER_PORT=9995
       - DLLAMA_API_PORT=5000
     networks:
-      - app-network
+      app-network:
+        ipv4_address: 192.168.90.15
     deploy:
       resources:
         limits:
@@ -255,6 +275,11 @@ networks:
   app-network:
     name: app-network
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.90.0/24
+          gateway: 192.168.90.1
 
 # Volumes for persistent model data and monitoring
 volumes:

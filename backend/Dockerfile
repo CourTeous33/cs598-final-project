@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     wget \
     curl \
+    netcat \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

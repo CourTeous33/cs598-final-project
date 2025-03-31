@@ -236,8 +236,8 @@ class DistributedLlamaManager:
                 "--buffer-float-type", "q80",
                 "--prompt", prompt,
                 "--steps", str(max_tokens),
-                "--nthreads", "2",
-                "--workers", "worker1:9998",
+                "--nthreads", "1",
+                "--workers", "192.168.90.11:9998",
                 "--debug"
             ]
             
