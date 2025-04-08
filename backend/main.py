@@ -68,6 +68,21 @@ class SystemStatus(BaseModel):
     model_path: str
     tokenizer_path: str
 
+@app.get("/workers/{worker_id}/network_status")
+async def get_worker_network_status(worker_id: int):
+    """Get network status for a specific worker"""
+    try:
+        worker_url = worker_urls[worker_id - 1]  # Adjust index (worker IDs start at 1)
+        response = await client.get(f"{worker_url}/network_status")
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, 
+                              detail=f"Error from worker: {response.text}")
+    except Exception as e:
+        logger.exception(f"Error getting network status for worker {worker_id}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/workers/status")
 async def get_workers_status():
     """Get status of all workers"""

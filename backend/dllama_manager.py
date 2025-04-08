@@ -63,7 +63,7 @@ class DistributedLlamaManager:
             "--steps", "10",
             "--nthreads", "1",
             "--port", "9999",
-            "--workers", "172.20.0.11:9998", "172.20.0.12:9998", "172.20.0.13:9998"
+            "--workers", "toxiproxy:6001", "toxiproxy:6002", "toxiproxy:6003"
         ]
         
         logger.info(f"Starting inference: {' '.join(cmd)}")

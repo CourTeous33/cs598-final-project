@@ -250,6 +250,50 @@ def signal_handler(sig, frame):
     
     sys.exit(0)
 
+@app.route("/network_status", methods=["GET"])
+def network_status():
+    """Return the current network status and performance"""
+    import pip._vendor.requests as requests  # Add this import
+    import psutil   # Make sure this is also imported
+    import time     # And this one too
+    try:
+        # Measure latency to backend
+        start_time = time.time()
+        try:
+            response = requests.get("http://backend:5000/status", timeout=2)
+            backend_latency = (time.time() - start_time) * 1000  # in ms
+            backend_status = response.status_code
+        except requests.exceptions.RequestException:
+            backend_latency = -1
+            backend_status = -1
+        
+        # Get network stats
+        net_stats = psutil.net_io_counters()
+        
+        return jsonify({
+            "worker_id": worker_id,
+            "timestamp": time.time(),
+            "backend_latency_ms": backend_latency,
+            "backend_status": backend_status,
+            "network_stats": {
+                "bytes_sent": net_stats.bytes_sent,
+                "bytes_recv": net_stats.bytes_recv,
+                "packets_sent": net_stats.packets_sent,
+                "packets_recv": net_stats.packets_recv,
+                "errin": net_stats.errin,
+                "errout": net_stats.errout,
+                "dropin": net_stats.dropin,
+                "dropout": net_stats.dropout
+            }
+        })
+    except Exception as e:
+        logger.exception("Error getting network status")
+        return jsonify({
+            "worker_id": worker_id,
+            "status": "error",
+            "error": str(e)
+        }), 500
+
 if __name__ == "__main__":
     # Register signal handlers
     signal.signal(signal.SIGINT, signal_handler)

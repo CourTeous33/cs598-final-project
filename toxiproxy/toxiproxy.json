@@ -1,0 +1,20 @@
+[
+    {
+      "name": "worker1_proxy",
+      "listen": "0.0.0.0:6001",
+      "upstream": "worker1:5000",
+      "enabled": true
+    },
+    {
+      "name": "worker2_proxy",
+      "listen": "0.0.0.0:6002",
+      "upstream": "worker2:5000",
+      "enabled": true
+    },
+    {
+      "name": "worker3_proxy",
+      "listen": "0.0.0.0:6003",
+      "upstream": "worker3:5000",
+      "enabled": true
+    }
+  ]

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import React from 'react';
 import TextGenerator from '../components/TextGenerator';
+import NetworkStatus from '../components/NetworkStatus'; // Add this import
 
 interface WorkerStatus {
   worker_id: number;
@@ -190,6 +191,11 @@ export default function Home() {
             {error && (
               <div className="mt-2 text-red-500 text-sm">{error}</div>
             )}
+          </div>
+
+          {/* Network Status Component - Add this section */}
+          <div className="mb-6">
+            <NetworkStatus />
           </div>
           
           {/* Text Generator Component */}

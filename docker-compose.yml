@@ -131,6 +131,21 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.5.0
+    container_name: toxiproxy
+    ports:
+      - "8474:8474"  # ToxiProxy API
+      - "6001-6010:6001-6010"  # Range for proxied ports
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.20
+    volumes:
+      - ./toxiproxy:/config
+    cap_add:
+      - NET_ADMIN
+    command: -host=0.0.0.0 -config=/config/toxiproxy.json
   
   # worker4:
   #   build:
